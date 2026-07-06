@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { obtenerEmpleados, crearEmpleado } from '../controllers/UsuarioControllers';
+import { obtenerEmpleados, crearEmpleado , eliminarEmpleado } from '../controllers/UsuarioControllers';
 import { verificarToken, esAdmin } from '../middlewares/AuthMiddleware';
 
 const router = Router();
@@ -7,5 +7,6 @@ const router = Router();
 // Solo el administrador (tú) puede ver y crear otros empleados
 router.get('/', verificarToken, esAdmin, obtenerEmpleados);
 router.post('/', verificarToken, esAdmin, crearEmpleado);
-
+// Ruta para eliminar un empleado (solo accesible por el administrador)
+router.delete('/:id', verificarToken, esAdmin, eliminarEmpleado);
 export default router;

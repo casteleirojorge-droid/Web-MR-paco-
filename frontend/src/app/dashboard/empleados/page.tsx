@@ -79,6 +79,25 @@ export default function GestorEmpleados() {
 
   if (cargando) return <div className="p-8 font-bold text-blue-600">Verificando credenciales...</div>;
 
+  const darDeBaja = async (id: string, nombre: string) => {
+    if (!window.confirm(`¿Confirmas la baja definitiva y rescisión de accesos para ${nombre}?`)) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:4000/api/usuarios/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setEmpleados(empleados.filter(emp => emp._id !== id));
+      } else {
+        const err = await res.json();
+        alert(`Error: ${err.mensaje}`);
+      }
+    } catch (error) {
+      alert("Error de conexión.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* BARRA LATERAL INTELIGENTE */}
@@ -140,6 +159,7 @@ export default function GestorEmpleados() {
                     <th className="p-4 font-bold">Nombre</th>
                     <th className="p-4 font-bold">Email</th>
                     <th className="p-4 font-bold text-center">Nivel de Acceso</th>
+                    <th className="p-4 font-bold text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -151,6 +171,14 @@ export default function GestorEmpleados() {
                         <span className={`px-3 py-1 rounded-full text-xs font-black ${emp.rol === 'admin' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                           {emp.rol === 'admin' ? 'ADMINISTRADOR' : 'EMPLEADO'}
                         </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <button 
+                          onClick={() => darDeBaja(emp._id, emp.nombre)}
+                          className="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors"
+                        >
+                          🗑️
+                        </button>
                       </td>
                     </tr>
                   ))}

@@ -81,8 +81,26 @@ export default function GestorIngredientes() {
   const irA = (ruta: string) => router.push(ruta);
 
   if (cargando) return <div className="p-8 font-bold text-orange-600">Cargando base de datos...</div>;
+  // Función para borrar un ingrediente
+    const borrarIngrediente = async (id: string, nombre: string) => {
+      if (!window.confirm(`¿Estás seguro de eliminar "${nombre}" del catálogo de materias primas?`)) return;
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`http://localhost:4000/api/ingredientes/${id}`, {
+          method: "DELETE",
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (res.ok) {
+          setIngredientes(ingredientes.filter(ing => ing._id !== id));
+        }   else {
+          alert("No se puede eliminar. Verifique que no esté en uso en alguna receta.");
+        }
+      } catch (error) {
+        alert("Error de conexión.");
+      }
+    };
 
-  return (
+return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* BARRA LATERAL */}
       <Sidebar />
@@ -138,26 +156,35 @@ export default function GestorIngredientes() {
                 <span className="text-sm font-bold text-gray-500">{ingredientes.length} totales</span>
               </div>
               
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider">
-                    <th className="p-4 font-bold">Nombre</th>
-                    <th className="p-4 font-bold">Medida</th>
-                    <th className="p-4 font-bold text-right">Costo / Ud</th>
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider">
+                  <th className="p-4 font-bold">Nombre</th>
+                  <th className="p-4 font-bold">Medida</th>
+                  <th className="p-4 font-bold text-right">Costo / Ud</th>
+                  <th className="p-4 font-bold text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {ingredientes.map(ing => (
+                  <tr key={ing._id} className="hover:bg-orange-50 transition-colors">
+                    <td className="p-4 font-bold text-gray-900">{ing.nombre}</td>
+                    <td className="p-4 text-sm font-medium text-gray-600">
+                      <span className="bg-gray-200 px-2 py-1 rounded text-xs">{ing.unidadMedida}</span>
+                    </td>
+                    <td className="p-4 text-right font-black text-gray-700">{ing.costoPorUnidad} $</td>
+                    <td className="p-4 text-center">
+                      <button 
+                        onClick={() => borrarIngrediente(ing._id, ing.nombre)}
+                        className="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors"
+                      >
+                        🗑️
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {ingredientes.map(ing => (
-                    <tr key={ing._id} className="hover:bg-orange-50 transition-colors">
-                      <td className="p-4 font-bold text-gray-900">{ing.nombre}</td>
-                      <td className="p-4 text-sm font-medium text-gray-600">
-                        <span className="bg-gray-200 px-2 py-1 rounded text-xs">{ing.unidadMedida}</span>
-                      </td>
-                      <td className="p-4 text-right font-black text-gray-700">{ing.costoPorUnidad} $</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>  
             </div>
           </div>
 

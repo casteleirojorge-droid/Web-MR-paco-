@@ -12,30 +12,59 @@ export const procesarCierreManual = async (req: Request, res: Response): Promise
       return;
     }
 
-    let totalDineroCaja = 0;
-    let costoTotalIngredientes = 0; // NUEVO: El contador de gastos del día
+    // ─── PASO 1: SIMULACIÓN Y VERIFICACIÓN DE STOCK ───
+    const requerimientos: { [key: string]: { nombre: string; cantidadNecesaria: number } } = {};
 
     for (const linea of lineas) {
       const productoReal = await Producto.findById(linea.productoId);
-      
+      if (productoReal && productoReal.receta && productoReal.receta.length > 0) {
+        for (const itemReceta of productoReal.receta) {
+          const idIngrediente = itemReceta.ingrediente.toString();
+          const cantidadTotalItem = itemReceta.cantidad * linea.cantidad;
+
+          if (!requerimientos[idIngrediente]) {
+            const ingDb = await Ingrediente.findById(idIngrediente);
+            requerimientos[idIngrediente] = {
+              nombre: ingDb ? ingDb.nombre : 'Materia Prima',
+              cantidadNecesaria: 0
+            };
+          }
+          requerimientos[idIngrediente].cantidadNecesaria += cantidadTotalItem;
+        }
+      }
+    }
+
+    // Comprobamos si el stock físico en base de datos cubre la demanda del cierre
+    for (const idIng in requerimientos) {
+      const ingDb = await Ingrediente.findById(idIng);
+      if (!ingDb || ingDb.stock < requerimientos[idIng].cantidadNecesaria) {
+        res.status(400).json({
+          mensaje: `Operación bloqueada por falta de existencias: No hay suficiente "${requerimientos[idIng].nombre}" en el almacén. Requerido: ${requerimientos[idIng].cantidadNecesaria}, Disponible: ${ingDb ? ingDb.stock : 0}.`
+        });
+        return; // Detiene la ejecución por completo
+      }
+    }
+
+    // ─── PASO 2: PROCESAMIENTO REAL (SÓLO SI PASÓ EL FILTRO) ───
+    let totalDineroCaja = 0;
+    let costoTotalIngredientes = 0;
+
+    for (const linea of lineas) {
+      const productoReal = await Producto.findById(linea.productoId);
       if (productoReal) {
-        // Sumamos los ingresos (Precio de Venta x Cantidad)
         totalDineroCaja += (productoReal.precio * linea.cantidad);
 
-        // Calculamos los gastos si el producto tiene receta
         if (productoReal.receta && productoReal.receta.length > 0) {
           for (const itemReceta of productoReal.receta) {
             const totalGramosConsumidos = itemReceta.cantidad * linea.cantidad;
-            const idIngrediente = itemReceta.ingrediente;
-
-            // Restamos stock Y recuperamos los datos del ingrediente al mismo tiempo
+            
             const ingredienteActualizado = await Ingrediente.findByIdAndUpdate(
-              idIngrediente, 
-              { $inc: { stock: -totalGramosConsumidos } }
+              itemReceta.ingrediente,
+              { $inc: { stock: -totalGramosConsumidos } },
+              { new: true }
             );
 
             if (ingredienteActualizado) {
-              // Gasto = Gramos o Uds consumidas * Lo que nos cuesta cada Gramo/Ud
               costoTotalIngredientes += (totalGramosConsumidos * ingredienteActualizado.costoPorUnidad);
             }
           }
@@ -43,16 +72,15 @@ export const procesarCierreManual = async (req: Request, res: Response): Promise
       }
     }
 
-    // Guardamos AMBOS datos en el libro contable de hoy
-    await CierreDiario.create({ 
+    await CierreDiario.create({
       totalRecaudado: totalDineroCaja,
-      costoTotal: costoTotalIngredientes 
+      costoTotal: costoTotalIngredientes
     });
-    
-    res.status(200).json({ mensaje: 'Cierre procesado: Inventario actualizado y dinero guardado.' });
+
+    res.status(200).json({ mensaje: 'Cierre procesado con éxito. Caja e inventario consolidados.' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ mensaje: 'Error al procesar el cierre.' });
+    res.status(500).json({ mensaje: 'Error interno al procesar el cierre contable.' });
   }
 };
 
