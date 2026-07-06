@@ -2,25 +2,26 @@ import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { conectarDB } from './config/db';
-import productoRoutes from './routes/ProductoRoutes'; // Importamos nuestras rutas
-import pedidoRoutes from './routes/PedidoRoutes'; // Importamos nuestras rutas de pedidos
-import metricaRoutes from './routes/MetricaRoutes'; // Importamos nuestras rutas de métricas
-import authRoutes from './routes/AuthRoutes'; // Importamos nuestras rutas de autenticación   
-import ingredientesRoutes from './routes/IngredientesRoutes'; // Importamos nuestras rutas de ingredientes
-import usuarioRoutes from './routes/UsuarioRoutes'; // Importamos nuestras rutas de usuarios
+import productoRoutes from './routes/ProductoRoutes'; 
+import pedidoRoutes from './routes/PedidoRoutes'; 
+import metricaRoutes from './routes/MetricaRoutes'; 
+import authRoutes from './routes/AuthRoutes';    
+import ingredientesRoutes from './routes/IngredientesRoutes'; 
+import usuarioRoutes from './routes/UsuarioRoutes'; 
 
-// Conectar a la base de datos
+// 1. CARGAR VARIABLES DE ENTORNO LO PRIMERO
+dotenv.config();
+
+// 2. CONECTAR A LA BASE DE DATOS
 conectarDB();
 
 const app = express();
+// 3. PUERTO DINÁMICO (Ahora sí leerá el .env correctamente)
 const PORT = process.env.PORT || 4000;
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
-
-// Lee el archivo .env y carga el JWT_SECRET en la memoria del servidor
-dotenv.config();
 
 // === RUTAS DE LA API ===
 app.use('/api/productos', productoRoutes); // Rutas de productos
