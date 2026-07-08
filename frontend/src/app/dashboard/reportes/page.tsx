@@ -26,7 +26,7 @@ export default function ReportesFinancieros() {
 
         if (!token) return router.push("/login");
 
-        const respuesta = await fetch("http://localhost:4000/api/pedidos/historial", {
+        const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pedidos/historial`, {
           headers: { "Authorization": `Bearer ${token}` },
           cache: "no-store"
         });

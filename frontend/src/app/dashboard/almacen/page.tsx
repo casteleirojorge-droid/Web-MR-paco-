@@ -18,7 +18,7 @@ export default function GestorAlmacen() {
       const token = localStorage.getItem("token");
       if (!token) return router.push("/login");
 
-      const respuesta = await fetch("http://localhost:4000/api/ingredientes", {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes`, {
         headers: { "Authorization": `Bearer ${token}` },
         cache: "no-store"
       });
@@ -43,7 +43,7 @@ export default function GestorAlmacen() {
 
     try {
       const token = localStorage.getItem("token");
-      const respuesta = await fetch(`http://localhost:4000/api/ingredientes/${ingredienteSeleccionado}/stock`, {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes/${ingredienteSeleccionado}/stock`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

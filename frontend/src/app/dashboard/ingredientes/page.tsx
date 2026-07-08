@@ -22,7 +22,7 @@ export default function GestorIngredientes() {
         router.push("/login");
         return;
       }
-      const respuesta = await fetch("http://localhost:4000/api/ingredientes", {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes`, {
         headers: { "Authorization": `Bearer ${token}` },
         cache: "no-store"
       });
@@ -52,7 +52,7 @@ export default function GestorIngredientes() {
         costoPorUnidad: Number(costo)
       };
 
-      const respuesta = await fetch("http://localhost:4000/api/ingredientes", {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -86,7 +86,7 @@ export default function GestorIngredientes() {
       if (!window.confirm(`¿Estás seguro de eliminar "${nombre}" del catálogo de materias primas?`)) return;
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:4000/api/ingredientes/${id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes/${id}`, {
           method: "DELETE",
           headers: { "Authorization": `Bearer ${token}` }
         });

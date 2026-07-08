@@ -31,8 +31,8 @@ export default function GestorMenu() {
       if (!token) return router.push("/login");
 
       const [resProductos, resIngredientes] = await Promise.all([
-        fetch("http://localhost:4000/api/productos", { headers: { "Authorization": `Bearer ${token}` }, cache: "no-store" }),
-        fetch("http://localhost:4000/api/ingredientes", { headers: { "Authorization": `Bearer ${token}` }, cache: "no-store" })
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/productos`, { headers: { "Authorization": `Bearer ${token}` }, cache: "no-store" }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes`, { headers: { "Authorization": `Bearer ${token}` }, cache: "no-store" })
       ]);
 
       if (resProductos.ok) setProductos(await resProductos.json());
@@ -86,7 +86,7 @@ export default function GestorMenu() {
         receta: recetaFormateada
       };
 
-      const respuesta = await fetch("http://localhost:4000/api/productos", {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/productos`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(nuevoPlato)
@@ -113,7 +113,7 @@ export default function GestorMenu() {
 
     try {
       const token = localStorage.getItem("token");
-      const respuesta = await fetch(`http://localhost:4000/api/productos/${id}`, {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/productos/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });

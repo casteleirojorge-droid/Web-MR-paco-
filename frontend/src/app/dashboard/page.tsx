@@ -22,12 +22,12 @@ export default function Dashboard() {
 
       try {
         // Pedimos los ingredientes y el dinero al mismo tiempo
-        const peticionIngredientes = fetch("http://localhost:4000/api/ingredientes", {
+        const peticionIngredientes = fetch("`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes`", {
           headers: { "Authorization": `Bearer ${token}` },
           cache: "no-store"
         });
         
-        const peticionCaja = fetch("http://localhost:4000/api/pedidos/caja-hoy", {
+        const peticionCaja = fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pedidos/caja-hoy`, {
           headers: { "Authorization": `Bearer ${token}` },
           cache: "no-store"
         });

@@ -29,7 +29,7 @@ export default function GestorEmpleados() {
         return;
       }
 
-      const respuesta = await fetch("http://localhost:4000/api/usuarios", {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/usuarios`, {
         headers: { "Authorization": `Bearer ${token}` },
         cache: "no-store"
       });
@@ -54,7 +54,7 @@ export default function GestorEmpleados() {
 
     try {
       const token = localStorage.getItem("token");
-      const respuesta = await fetch("http://localhost:4000/api/usuarios", {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/usuarios`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ nombre, email, password, rol: rolAsignado })
@@ -83,7 +83,7 @@ export default function GestorEmpleados() {
     if (!window.confirm(`¿Confirmas la baja definitiva y rescisión de accesos para ${nombre}?`)) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:4000/api/usuarios/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/usuarios/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });

@@ -20,7 +20,7 @@ export default function CentroProduccion() {
       const token = localStorage.getItem("token");
       if (!token) return router.push("/login");
 
-      const res = await fetch("http://localhost:4000/api/ingredientes", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) setIngredientes(await res.json());
@@ -34,7 +34,7 @@ export default function CentroProduccion() {
 
     try {
       const token = localStorage.getItem("token");
-      const respuesta = await fetch("http://localhost:4000/api/ingredientes/transformar", {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes/transformar`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -52,7 +52,7 @@ export default function CentroProduccion() {
         alert("👨‍🍳 ¡Lote de producción registrado! Inventario cuadrando...");
         setDestinoId(""); setCantidadGenerada(""); setOrigenId(""); setCantidadGastada("");
         // Recargar stock visual
-        const res = await fetch("http://localhost:4000/api/ingredientes", { headers: { "Authorization": `Bearer ${token}` } });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes`, { headers: { "Authorization": `Bearer ${token}` } });
         if (res.ok) setIngredientes(await res.json());
       } else {
         const error = await respuesta.json();

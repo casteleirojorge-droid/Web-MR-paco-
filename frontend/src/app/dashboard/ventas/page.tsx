@@ -26,7 +26,7 @@ export default function CierreManualJornada() {
         const token = localStorage.getItem("token");
         if (!token) return router.push("/login");
 
-        const respuesta = await fetch("http://localhost:4000/api/productos", {
+        const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/productos`, {
           headers: { "Authorization": `Bearer ${token}` },
           cache: "no-store"
         });
@@ -91,7 +91,7 @@ export default function CierreManualJornada() {
 
     try {
       const token = localStorage.getItem("token");
-      const respuesta = await fetch("http://localhost:4000/api/pedidos/cierre-manual", {
+      const respuesta = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pedidos/cierre-manual`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
