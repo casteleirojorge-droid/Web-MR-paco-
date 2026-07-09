@@ -8,6 +8,7 @@ import metricaRoutes from './routes/MetricaRoutes';
 import authRoutes from './routes/AuthRoutes';    
 import ingredientesRoutes from './routes/IngredientesRoutes'; 
 import usuarioRoutes from './routes/UsuarioRoutes'; 
+import entradaRoutes from './routes/EntradaRoutes';
 
 // 1. CARGAR VARIABLES DE ENTORNO LO PRIMERO
 dotenv.config();
@@ -30,6 +31,7 @@ app.use('/api/metricas', metricaRoutes); // Rutas de métricas
 app.use('/api/auth', authRoutes); // Rutas de autenticación
 app.use('/api/ingredientes', ingredientesRoutes); // Rutas de ingredientes
 app.use('/api/usuarios', usuarioRoutes); // Rutas de usuarios
+app.use('/api/entradas', entradaRoutes); // Rutas de entradas
 // Ruta de prueba base
 app.get('/', (req: Request, res: Response) => {
   res.send('El servidor de Mr. Paco esta vivo y funcionando con TypeScript!');
