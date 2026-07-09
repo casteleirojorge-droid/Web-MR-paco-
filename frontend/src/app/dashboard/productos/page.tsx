@@ -9,6 +9,9 @@ interface ItemReceta {
   nombre: string;
   cantidad: number;
   unidad: string;
+  // NUEVO: Traemos el costo para hacer el cálculo matemático visual
+  costoUnitario: number; 
+  monedaIngrediente: string;
 }
 
 export default function GestorMenu() {
@@ -20,6 +23,7 @@ export default function GestorMenu() {
 
   const [nombrePlato, setNombrePlato] = useState("");
   const [precioPlato, setPrecioPlato] = useState("");
+  const [monedaPlato, setMonedaPlato] = useState("CUP"); // NUEVO: Estado para la moneda de venta
   const [recetaTemporal, setRecetaTemporal] = useState<ItemReceta[]>([]);
   
   const [ingredienteSeleccionado, setIngredienteSeleccionado] = useState("");
@@ -58,7 +62,9 @@ export default function GestorMenu() {
       ingredienteId: ingReal._id,
       nombre: ingReal.nombre,
       cantidad: Number(cantidadReceta),
-      unidad: ingReal.unidadMedida
+      unidad: ingReal.unidadMedida,
+      costoUnitario: ingReal.costoPorUnidad, // NUEVO: Guardamos el costo de este ingrediente
+      monedaIngrediente: ingReal.moneda // NUEVO: Guardamos si se paga en USD o CUP
     }]);
     setIngredienteSeleccionado("");
     setCantidadReceta("");
@@ -83,6 +89,7 @@ export default function GestorMenu() {
       const nuevoPlato = {
         nombre: nombrePlato,
         precio: Number(precioPlato),
+        moneda: monedaPlato, // NUEVO: Le enviamos la moneda al backend
         receta: recetaFormateada
       };
 
@@ -96,6 +103,7 @@ export default function GestorMenu() {
         alert("¡Plato añadido al menú con éxito!");
         setNombrePlato("");
         setPrecioPlato("");
+        setMonedaPlato("CUP");
         setRecetaTemporal([]);
         cargarDatos();
       } else {
@@ -107,7 +115,6 @@ export default function GestorMenu() {
     }
   };
 
-  // Función para eliminar un plato
   const borrarPlato = async (id: string, nombre: string) => {
     if (!window.confirm(`¿Estás seguro de que quieres eliminar "${nombre}" de la carta?`)) return;
 
@@ -119,7 +126,6 @@ export default function GestorMenu() {
       });
 
       if (respuesta.ok) {
-        // Filtramos la lista visual para que el plato desaparezca al instante sin recargar la página
         setProductos(productos.filter(p => p._id !== id));
       } else {
         alert("Error al intentar eliminar el plato.");
@@ -129,16 +135,16 @@ export default function GestorMenu() {
     }
   };
 
-  const irA = (ruta: string) => router.push(ruta);
+  // NUEVO: Cálculos matemáticos en vivo para el costo del plato
+  const costoTotalCUP = recetaTemporal.filter(i => i.monedaIngrediente === 'CUP').reduce((total, item) => total + (item.cantidad * item.costoUnitario), 0);
+  const costoTotalUSD = recetaTemporal.filter(i => i.monedaIngrediente === 'USD').reduce((total, item) => total + (item.cantidad * item.costoUnitario), 0);
 
   if (cargando) return <div className="p-8 font-bold text-orange-600">Cargando menú...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      {/* BARRA LATERAL ACTUALIZADA CON LOGÍSTICA */}
       <Sidebar />
 
-      {/* CONTENIDO PRINCIPAL */}
       <main className="flex-1 p-10 overflow-y-auto">
         <header className="mb-10">
           <h1 className="text-4xl font-black text-gray-800">Gestor de Menú</h1>
@@ -154,14 +160,22 @@ export default function GestorMenu() {
             </h2>
             
             <form onSubmit={guardarNuevoPlato} className="space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Nombre</label>
+                <input type="text" required value={nombrePlato} onChange={e => setNombrePlato(e.target.value)} placeholder="Ej: Pizza del Jefe" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500" />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Nombre</label>
-                  <input type="text" required value={nombrePlato} onChange={e => setNombrePlato(e.target.value)} placeholder="Ej: Pizza del Jefe" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500" />
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Precio Venta</label>
+                  <input type="number" step="0.01" required value={precioPlato} onChange={e => setPrecioPlato(e.target.value)} placeholder="Ej: 2100" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500" />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Precio ($)</label>
-                  <input type="number" step="0.01" required value={precioPlato} onChange={e => setPrecioPlato(e.target.value)} placeholder="Ej: 2100" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500" />
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Moneda</label>
+                  <select value={monedaPlato} onChange={e => setMonedaPlato(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-orange-500">
+                    <option value="CUP">CUP</option>
+                    <option value="USD">USD</option>
+                  </select>
                 </div>
               </div>
 
@@ -170,24 +184,36 @@ export default function GestorMenu() {
                 <h3 className="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Construir Escandallo (Opcional)</h3>
                 
                 {recetaTemporal.length > 0 && (
-                  <ul className="mb-4 space-y-2">
-                    {recetaTemporal.map((item, idx) => (
-                      <li key={idx} className="flex justify-between items-center bg-white p-2 px-4 rounded-lg border border-gray-100 text-sm font-medium shadow-sm">
-                        <span>{item.nombre} <span className="text-orange-600">({item.cantidad}{item.unidad})</span></span>
-                        <button type="button" onClick={() => quitarDeReceta(idx)} className="text-red-500 font-bold hover:text-red-700">X</button>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="mb-4 space-y-2">
+                    <ul className="space-y-2">
+                      {recetaTemporal.map((item, idx) => (
+                        <li key={idx} className="flex justify-between items-center bg-white p-2 px-4 rounded-lg border border-gray-100 text-sm font-medium shadow-sm">
+                          <span>
+                            {item.nombre} <span className="text-orange-600">({item.cantidad}{item.unidad})</span>
+                            <span className="block text-xs text-gray-400 mt-1">Costo: {(item.cantidad * item.costoUnitario).toFixed(2)} {item.monedaIngrediente}</span>
+                          </span>
+                          <button type="button" onClick={() => quitarDeReceta(idx)} className="text-red-500 font-bold hover:text-red-700">X</button>
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    {/* PANEL DE COSTO TOTAL EN VIVO */}
+                    <div className="mt-3 p-3 bg-slate-900 text-white rounded-lg text-sm">
+                      <div className="font-bold text-slate-300 mb-1">Costo de Producción:</div>
+                      {costoTotalCUP > 0 && <div>{costoTotalCUP.toFixed(2)} CUP</div>}
+                      {costoTotalUSD > 0 && <div>{costoTotalUSD.toFixed(2)} USD</div>}
+                    </div>
+                  </div>
                 )}
 
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 mt-4">
                   <select value={ingredienteSeleccionado} onChange={e => setIngredienteSeleccionado(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
                     <option value="">- Seleccionar ingrediente -</option>
                     {ingredientesDb.map(ing => (
                       <option key={ing._id} value={ing._id}>{ing.nombre}</option>
                     ))}
                   </select>
-                  <input type="number" value={cantidadReceta} onChange={e => setCantidadReceta(e.target.value)} placeholder="Cant." className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input type="number" step="0.01" value={cantidadReceta} onChange={e => setCantidadReceta(e.target.value)} placeholder="Cant." className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                   <button type="button" onClick={agregarIngredienteAReceta} className="bg-slate-900 text-white font-bold px-4 rounded-lg hover:bg-slate-800 transition">
                     Añadir
                   </button>
@@ -212,10 +238,10 @@ export default function GestorMenu() {
                  <div className="flex justify-between items-start mb-2">
                     <div>
                       <h3 className="text-lg font-black text-gray-900">{producto.nombre}</h3>
-                      <span className="text-lg font-black text-green-600">{producto.precio} $</span>
+                      {/* NUEVO: Mostramos la moneda de venta que viene del backend */}
+                      <span className="text-lg font-black text-green-600">{producto.precio} {producto.moneda || 'CUP'}</span>
                     </div>
                     
-                    {/* BOTÓN DE ELIMINAR */}
                     <button 
                       onClick={() => borrarPlato(producto._id, producto.nombre)}
                       className="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors"
