@@ -2,16 +2,23 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IIngrediente extends Document {
   nombre: string;
-  unidadMedida: 'g' | 'ml' | 'ud'; // Gramos para sólidos, Mililitros para líquidos, Unidades para huevos/panes
+  categoria: 'materia_prima' | 'pre_elaborado'; // NUEVO: Diferencia lo comprado de lo fabricado
+  unidadMedida: 'g' | 'ml' | 'ud';
   costoPorUnidad: number;
-  stock: number; // Opcional: para llevar un control de inventario 
+  moneda: 'CUP' | 'USD'; // NUEVO: Control de divisas
+  stock: number;
 }
 
 const IngredienteSchema: Schema = new Schema({
   nombre: { 
     type: String, 
     required: true, 
-    unique: true // No queremos tener "Tomate" registrado dos veces
+    unique: true 
+  },
+  categoria: {
+    type: String,
+    enum: ['materia_prima', 'pre_elaborado'],
+    required: true
   },
   unidadMedida: { 
     type: String, 
@@ -21,6 +28,11 @@ const IngredienteSchema: Schema = new Schema({
   costoPorUnidad: { 
     type: Number, 
     required: true 
+  },
+  moneda: {
+    type: String,
+    enum: ['CUP', 'USD'],
+    required: true
   },
   stock: { 
     type: Number, 
