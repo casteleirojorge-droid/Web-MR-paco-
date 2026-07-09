@@ -28,28 +28,28 @@ export default function Sidebar() {
       </div>
       
       <nav className="flex-1 p-4 space-y-1 mt-2 overflow-y-auto">
-        <button onClick={() => irA("/dashboard")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">📊 Vista General</button>
+        <button onClick={() => irA("/dashboard")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">Vista General</button>
         
         <div className="pt-4 pb-1"><p className="px-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Comercial</p></div>
-        <button onClick={() => irA("/dashboard/productos")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">🍔 Gestor de Menú</button>
+        <button onClick={() => irA("/dashboard/productos")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">Gestor de Menú</button>
 
         <div className="pt-4 pb-1"><p className="px-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Logística / Almacén</p></div>
-        <button onClick={() => irA("/dashboard/ingredientes")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">🥦 Materias Primas</button>
-        <button onClick={() => irA("/dashboard/almacen")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">📦 Inventario</button>
+        <button onClick={() => irA("/dashboard/ingredientes")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">Materias Primas</button>
+        <button onClick={() => irA("/dashboard/almacen")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">Inventario</button>
 
         {/* NUEVO BOTÓN */}
         <button onClick={() => irA("/dashboard/produccion")} className="w-full text-left px-4 py-2 text-orange-400 font-bold hover:bg-slate-800 rounded-lg transition-all flex items-center">
-          <span className="mr-2">🧑‍🍳</span> C. Producción
+          C. Producción
         </button>
 
         <div className="pt-4 pb-1"><p className="px-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Contabilidad</p></div>
-        <button onClick={() => irA("/dashboard/ventas")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">📥 Cierre Diario</button>
-        <button onClick={() => irA("/dashboard/reportes")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">📈 Reportes Financieros</button>
+        <button onClick={() => irA("/dashboard/ventas")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">Cierre Diario</button>
+        <button onClick={() => irA("/dashboard/reportes")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">Reportes Financieros</button>
 
         {rolUsuario === "admin" && (
           <>
             <div className="pt-4 pb-1"><p className="px-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">RRHH & Admin</p></div>
-            <button onClick={() => irA("/dashboard/empleados")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">👥 Personal</button>
+            <button onClick={() => irA("/dashboard/empleados")} className="w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-800 rounded-lg transition-all">Personal</button>
           </>
         )}
       </nav>

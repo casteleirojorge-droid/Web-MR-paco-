@@ -3,7 +3,7 @@ import Producto from '../models/Producto';
 
 export const crearProducto = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("📥 Recibiendo petición para crear plato:", req.body);
+    console.log("Recibiendo petición para crear plato:", req.body);
     
     const { nombre, precio, receta } = req.body;
     
@@ -14,11 +14,11 @@ export const crearProducto = async (req: Request, res: Response): Promise<void> 
     });
     
     await nuevoProducto.save();
-    console.log("✅ Plato guardado con éxito en la base de datos.");
+    console.log("Plato guardado con éxito en la base de datos.");
     
     res.status(201).json(nuevoProducto);
   } catch (error: any) {
-    console.error("❌ Error CRÍTICO al guardar producto:", error);
+    console.error("Error CRÍTICO al guardar producto:", error);
     res.status(500).json({ mensaje: `Fallo en el servidor: ${error.message}` });
   }
 };

@@ -83,7 +83,7 @@ export default function CierreManualJornada() {
       }));
 
     if (lineasVenta.length === 0) {
-      alert("⚠️ Por favor, introduce la cantidad de al menos un producto vendido.");
+      alert("Por favor, introduce la cantidad de al menos un producto vendido.");
       return;
     }
 
@@ -101,7 +101,7 @@ export default function CierreManualJornada() {
       });
 
       if (respuesta.ok) {
-        alert("✅ Reporte de cierre procesado correctamente. Caja sumada e inventario actualizado.");
+        alert("Reporte de cierre procesado correctamente. Caja sumada e inventario actualizado.");
         
         // Limpiamos el formulario para el día siguiente
         const limpias: { [key: string]: string } = {};
@@ -191,7 +191,7 @@ export default function CierreManualJornada() {
                 disabled={procesando}
                 className={`w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-black py-4 rounded-xl shadow-lg text-lg transition-all transform hover:-translate-y-0.5 ${procesando ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {procesando ? "Guardando Cierre..." : "🔒 PROCESAR CIERRE DE JORNADA"}
+                {procesando ? "Guardando Cierre..." : "PROCESAR CIERRE DE JORNADA"}
               </button>
             </div>
           </div>

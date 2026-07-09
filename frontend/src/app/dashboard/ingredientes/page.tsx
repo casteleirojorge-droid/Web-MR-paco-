@@ -62,7 +62,7 @@ export default function GestorIngredientes() {
       });
 
       if (respuesta.ok) {
-        alert("✅ Materia prima registrada correctamente.");
+        alert("¡Materia prima registrada correctamente!");
         setNombre("");
         setCosto("");
         setUnidadMedida("g");

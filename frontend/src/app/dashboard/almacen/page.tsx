@@ -53,7 +53,7 @@ export default function GestorAlmacen() {
       });
 
       if (respuesta.ok) {
-        alert("✅ Entrada de mercancía registrada con éxito.");
+        alert("Entrada de mercáncía registrada con éxito.");
         setIngredienteSeleccionado("");
         setCantidad("");
         cargarIngredientes();
@@ -112,7 +112,7 @@ export default function GestorAlmacen() {
           <div className="lg:col-span-1">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 sticky top-8">
               <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                <span className="bg-orange-100 p-2 rounded-lg mr-3">📦</span> Registrar Entrada
+                <span className="bg-orange-100 p-2 rounded-lg mr-3">Registrar Entrada</span>
               </h2>
 
               <form onSubmit={registrarEntrada} className="space-y-5">

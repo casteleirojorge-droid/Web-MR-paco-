@@ -106,7 +106,7 @@ export default function Dashboard() {
 
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-            <span className="mr-3 text-3xl">⚠️</span> Estado del Almacén
+            <span className="mr-3 text-3xl">Estado del Almacén</span>
           </h2>
           
           {alertasCriticas.length === 0 && alertasBajas.length === 0 ? (
@@ -117,14 +117,14 @@ export default function Dashboard() {
             <div className="space-y-4">
               {alertasCriticas.map(ing => (
                 <div key={ing._id} className="flex justify-between items-center p-5 bg-red-50 text-red-800 rounded-xl border border-red-200">
-                  <div className="font-bold text-lg">🛑 ROTO DE STOCK: {ing.nombre}</div>
+                  <div className="font-bold text-lg">ROTO DE STOCK: {ing.nombre}</div>
                   <div className="text-base font-black bg-red-200 px-4 py-2 rounded-lg shadow-sm">Stock: {ing.stock} {ing.unidadMedida}</div>
                 </div>
               ))}
               
               {alertasBajas.map(ing => (
                 <div key={ing._id} className="flex justify-between items-center p-5 bg-yellow-50 text-yellow-800 rounded-xl border border-yellow-200">
-                  <div className="font-bold text-lg">⚠️ STOCK BAJO: {ing.nombre}</div>
+                  <div className="font-bold text-lg">STOCK BAJO: {ing.nombre}</div>
                   <div className="text-base font-black bg-yellow-200 px-4 py-2 rounded-lg shadow-sm">Quedan {ing.stock} {ing.unidadMedida}</div>
                 </div>
               ))}

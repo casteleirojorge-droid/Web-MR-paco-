@@ -61,7 +61,7 @@ export default function GestorEmpleados() {
       });
 
       if (respuesta.ok) {
-        alert("✅ Empleado dado de alta en la plantilla.");
+        alert("Empleado dado de alta en la plantilla.");
         setNombre(""); setEmail(""); setPassword(""); setRolAsignado("empleado");
         cargarEmpleados();
       } else {
@@ -115,7 +115,7 @@ export default function GestorEmpleados() {
           <div className="lg:col-span-1">
             <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 sticky top-8">
               <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <span className="bg-blue-100 p-2 rounded-lg mr-3">👤</span> Nuevo Contrato
+                <span className="bg-blue-100 p-2 rounded-lg mr-3">Nuevo Contrato</span>
               </h2>
               
               <form onSubmit={registrarEmpleado} className="space-y-4">

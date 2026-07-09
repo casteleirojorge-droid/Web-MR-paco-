@@ -93,7 +93,7 @@ export default function GestorMenu() {
       });
 
       if (respuesta.ok) {
-        alert("🍲 ¡Plato añadido al menú con éxito!");
+        alert("¡Plato añadido al menú con éxito!");
         setNombrePlato("");
         setPrecioPlato("");
         setRecetaTemporal([]);
@@ -228,12 +228,10 @@ export default function GestorMenu() {
                   <div className="text-sm text-gray-500">
                     {producto.receta && producto.receta.length > 0 ? (
                       <div className="flex items-center">
-                        <span className="mr-2 text-blue-500">📝</span>
-                        Escandallo configurado ({producto.receta.length} ingredientes)
+                        <span className="mr-2 text-blue-500">Escandallo configurado ({producto.receta.length} ingredientes)</span>
                       </div>
                     ) : (
                       <div className="flex items-center text-yellow-600">
-                        <span className="mr-2">⚠️</span>
                         Sin escandallo (No descuenta stock)
                       </div>
                     )}
