@@ -22,7 +22,7 @@ export default function Dashboard() {
 
       try {
         // Pedimos los ingredientes y el dinero al mismo tiempo
-        const peticionIngredientes = fetch("`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes`", {
+        const peticionIngredientes = fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ingredientes`, {
           headers: { "Authorization": `Bearer ${token}` },
           cache: "no-store"
         });
