@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Ingrediente from '../models/Ingredientes';
+import Producto from '../models/Producto'; // Ajusta la ruta si es necesario
 
 // 1. Crear un ingrediente nuevo (ACTUALIZADO: Ahora acepta Categoría, Moneda y Stock inicial)
 export const crearIngrediente = async (req: Request, res: Response): Promise<void> => {
@@ -119,5 +120,17 @@ export const transformarIngrediente = async (req: Request, res: Response): Promi
   } catch (error) {
     console.error("Error en transformación:", error);
     res.status(500).json({ mensaje: 'Error al procesar la producción en cocina.' });
+  }
+};
+
+export const botonRojo = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Esto borra absolutamente todas las colecciones de golpe, sin preguntar
+    await Producto.deleteMany({});
+    await Ingrediente.deleteMany({});
+    
+    res.status(200).json({ mensaje: "💥 ¡BOMBA NUCLEAR EJECUTADA! Almacén y Menú a cero." });
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al detonar", error });
   }
 };
