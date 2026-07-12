@@ -1,15 +1,24 @@
 import { Request, Response } from 'express';
 import Ingrediente from '../models/Ingredientes';
 
-// 1. Crear un ingrediente nuevo (Lo usábamos en Thunder Client)
+// 1. Crear un ingrediente nuevo (ACTUALIZADO: Ahora acepta Categoría, Moneda y Stock inicial)
 export const crearIngrediente = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { nombre, unidadMedida, costoPorUnidad } = req.body;
-    const nuevoIngrediente = new Ingrediente({ nombre, unidadMedida, costoPorUnidad });
+    // Usamos directamente req.body para que recoja TODO: nombre, categoria, unidad, costo, moneda y stock
+    const nuevoIngrediente = new Ingrediente(req.body);
     await nuevoIngrediente.save();
+    
     res.status(201).json(nuevoIngrediente);
-  } catch (error) {
-    res.status(500).json({ mensaje: 'Error al crear el ingrediente' });
+  } catch (error: any) {
+    console.error("Error al crear ingrediente:", error);
+    
+    // Si intenta meter un ingrediente con un nombre que ya existe (Ej: "Pan Boom" por segunda vez)
+    if (error.code === 11000) {
+      res.status(400).json({ mensaje: 'Este ingrediente ya existe en el catálogo.' });
+      return;
+    }
+
+    res.status(500).json({ mensaje: 'Error al crear el ingrediente', detalle: error.message });
   }
 };
 
@@ -37,7 +46,7 @@ export const agregarStock = async (req: Request, res: Response): Promise<void> =
     const ingredienteActualizado = await Ingrediente.findByIdAndUpdate(
       id,
       { $inc: { stock: cantidadAgregada } },
-      { returnDocument: 'after' } // Esto asegura que obtenemos el documento actualizado
+      { returnDocument: 'after' } 
     );
 
     res.status(200).json({ 
@@ -65,11 +74,10 @@ export const eliminarIngrediente = async (req: Request, res: Response): Promise<
   }
 };
 
-// 5. Transformar ingredientes (Ej: Harina + Agua + Sal = Masa)
+// 5. Transformar ingredientes (Ej: Harina + Agua + Sal = Masa) - ¡MANTENIDA INTACTA!
 export const transformarIngrediente = async (req: Request, res: Response): Promise<void> => {
   try {
     const { idIngredienteDestino, cantidadGenerada, ingredientesOrigen } = req.body;
-    // ingredientesOrigen es un array: [{ id: "...", cantidadGastada: 3000 }]
 
     // 1. Verificamos que tengamos stock suficiente de las materias primas crudas ANTES de hacer nada
     for (const item of ingredientesOrigen) {
