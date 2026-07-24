@@ -4,11 +4,8 @@ export interface IUsuario extends Document {
   nombre: string;
   email: string;
   passwordHash: string;
-  rol: 'cliente' | 'trabajador' | 'admin';
-  // Nuevos campos para el Delivery (son opcionales con el "?")
-  telefono?: string;
-  direccion?: string;
-  identificacion?: string;
+  rol: 'sala' | 'produccion' | 'logistica' | 'admin';
+  activo: boolean;
 }
 
 const UsuarioSchema: Schema = new Schema({
@@ -17,12 +14,11 @@ const UsuarioSchema: Schema = new Schema({
   passwordHash: { type: String, required: true },
   rol: { 
     type: String, 
-    enum: ['cliente', 'trabajador', 'admin'], 
-    default: 'cliente' // Ahora, cualquiera que se registre en la web por defecto es cliente
+    enum: ['sala', 'produccion', 'logistica', 'admin'], 
+    required: true,
+    default: 'sala' // Front of House por defecto
   },
-  telefono: { type: String },
-  direccion: { type: String },
-  identificacion: { type: String }
+  activo: { type: Boolean, default: true }
 }, { timestamps: true });
 
 export default mongoose.model<IUsuario>('Usuario', UsuarioSchema);
