@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import Ingrediente from '../models/Ingredientes';
+import Ingrediente from '../models/Ingredientes'; // Corregido a singular
 import Producto from '../models/Producto';
+import EntradaAlmacen from '../models/EntradaAlmacen';
 
 export const crearIngrediente = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -29,15 +30,25 @@ export const agregarStock = async (req: Request, res: Response): Promise<void> =
   try {
     const { id } = req.params;
     
-    // Tipado explícito de la carga entrante
-    const body = req.body as { cantidadAgregada?: any; costoTotal?: any };
+    // Mapeo exacto de las variables que envía el frontend actual
+    const body = req.body as { 
+      cantidadAgregada?: any; 
+      costoOriginal?: any; 
+      monedaOriginal?: string; 
+      tasaCambio?: any 
+    };
+    
     const cantidad = Number(body.cantidadAgregada);
-    const costo = Number(body.costoTotal);
+    const costoOriginal = Number(body.costoOriginal);
+    const monedaOriginal = body.monedaOriginal || 'CUP';
+    const tasaCambio = Number(body.tasaCambio || 1);
 
-    if (!cantidad || cantidad <= 0 || isNaN(costo) || costo < 0) {
+    if (!cantidad || cantidad <= 0 || isNaN(costoOriginal) || costoOriginal < 0) {
       res.status(400).json({ mensaje: 'Cantidades o costo inválidos' });
       return;
     }
+
+    const costoTotalCUP = costoOriginal * tasaCambio;
 
     const ingrediente = await Ingrediente.findById(id);
     if (!ingrediente) {
@@ -45,12 +56,24 @@ export const agregarStock = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
+    // 1. Guardar el registro inmutable de la entrada
+    const nuevaEntrada = new EntradaAlmacen({
+      ingrediente: id,
+      cantidadComprada: cantidad,
+      costoOriginal: costoOriginal,
+      tasaCambio: tasaCambio,
+      costoTotalCUP: costoTotalCUP,
+      moneda: monedaOriginal
+    });
+    await nuevaEntrada.save();
+
+    // 2. Actualizar el inventario general con el promedio en CUP
     const stockActual = Number(ingrediente.stock || 0);
     const costoUnitarioActual = Number(ingrediente.costoPorUnidad || 0);
 
     const valorInventarioActual = stockActual * costoUnitarioActual;
     const nuevoStock = stockActual + cantidad;
-    const nuevoCostoUnitario = (valorInventarioActual + costo) / nuevoStock;
+    const nuevoCostoUnitario = (valorInventarioActual + costoTotalCUP) / nuevoStock;
 
     const ingredienteActualizado = await Ingrediente.findByIdAndUpdate(
       id,
@@ -62,7 +85,7 @@ export const agregarStock = async (req: Request, res: Response): Promise<void> =
     );
 
     res.status(200).json({ 
-      mensaje: 'Entrada registrada y costo promediado', 
+      mensaje: 'Entrada registrada y ticket guardado en EntradaAlmacen', 
       ingrediente: ingredienteActualizado 
     });
   } catch (error) {
