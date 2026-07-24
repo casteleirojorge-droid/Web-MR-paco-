@@ -89,6 +89,28 @@ export default function GestorAlmacen() {
     // Lógica pendiente para sumar stock
   };
 
+  const handleEliminarProducto = async (id: string, nombre: string) => {
+    if (!window.confirm(`¿Estás seguro de eliminar "${nombre}" del catálogo? Esta acción no se puede deshacer.`)) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://web-mr-paco-production.up.railway.app'}/api/ingredientes/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        cargarInventario(); // Recarga la tabla
+      } else {
+        const err = await res.json();
+        alert(`❌ Error: ${err.mensaje}`);
+      }
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("Error de conexión.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex">
       <Sidebar />
@@ -203,6 +225,7 @@ export default function GestorAlmacen() {
                       <th className="px-6 py-4 font-bold">Producto</th>
                       <th className="px-6 py-4 font-bold">Costo Unitario</th>
                       <th className="px-6 py-4 font-bold">Stock Actual</th>
+                      <th className="px-6 py-4 font-bold text-center">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -214,6 +237,15 @@ export default function GestorAlmacen() {
                         </td>
                         <td className="px-6 py-4 font-black text-gray-800">
                           {item.stock} {item.unidadMedida}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <button 
+                            onClick={() => handleEliminarProducto(item._id, item.nombre)}
+                            className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Eliminar producto"
+                          >
+                            🗑️
+                          </button>
                         </td>
                       </tr>
                     ))}
