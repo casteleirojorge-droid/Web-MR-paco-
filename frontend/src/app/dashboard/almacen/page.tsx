@@ -9,13 +9,14 @@ export default function GestorAlmacen() {
   const [productoSeleccionado, setProductoSeleccionado] = useState("");
   const [cantidad, setCantidad] = useState("");
   const [costoFactura, setCostoFactura] = useState("");
+  const [tasaCambio, setTasaCambio] = useState(""); // Añadido estado para la tasa
   
   const [nuevoNombre, setNuevoNombre] = useState("");
   const [nuevaCategoria, setNuevaCategoria] = useState("materia_prima");
   const [nuevaUnidad, setNuevaUnidad] = useState("g");
   const [nuevaMoneda, setNuevaMoneda] = useState("CUP");
 
-  const [inventario, setInventario] = useState([]);
+  const [inventario, setInventario] = useState<any[]>([]);
 
   const cargarInventario = async () => {
     try {
@@ -36,11 +37,9 @@ export default function GestorAlmacen() {
     cargarInventario();
   }, []);
 
-  // Pasado a React.MouseEvent al estar vinculado directamente al botón
   const handleCrearProducto = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     console.log("🚀 EVENTO DISPARADO: Intentando crear producto...");
-    console.log("Payload:", { nombre: nuevoNombre, categoria: nuevaCategoria, unidadMedida: nuevaUnidad, moneda: nuevaMoneda });
 
     if (!nuevoNombre) {
       alert("Debes escribir un nombre para el producto.");
@@ -65,8 +64,6 @@ export default function GestorAlmacen() {
         })
       });
 
-      console.log("Respuesta del servidor (Status):", res.status);
-
       if (res.ok) {
         alert("✅ Producto creado con éxito");
         setNuevoNombre("");
@@ -75,7 +72,6 @@ export default function GestorAlmacen() {
       } else {
         const err = await res.json();
         alert(`❌ Error: ${err.mensaje}`);
-        console.error("Detalle del error:", err);
       }
     } catch (error) {
       console.error("Error de red:", error);
@@ -83,10 +79,54 @@ export default function GestorAlmacen() {
     }
   };
 
-  const handleRegistrarEntrada = async (e: React.FormEvent) => {
+  const handleRegistrarEntrada = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log("Registrar entrada...");
-    // Lógica pendiente para sumar stock
+    console.log("🚀 Registrando entrada...");
+    
+    if (!productoSeleccionado || !cantidad || !costoFactura) {
+      alert("⚠️ Completa todos los campos principales (Producto, Cantidad y Costo).");
+      return;
+    }
+
+    const productoCompleto = inventario.find(i => i._id === productoSeleccionado);
+    const monedaOriginal = productoCompleto ? productoCompleto.moneda : "CUP";
+    const requiereConversion = monedaOriginal !== "CUP";
+
+    if (requiereConversion && !tasaCambio) {
+      alert("⚠️ Debes introducir a cómo está el cambio en la calle para procesar esta factura.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://web-mr-paco-production.up.railway.app'}/api/ingredientes/${productoSeleccionado}/stock`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          cantidadAgregada: Number(cantidad),
+          costoOriginal: Number(costoFactura),
+          monedaOriginal: monedaOriginal,
+          tasaCambio: requiereConversion ? Number(tasaCambio) : 1
+        })
+      });
+
+      if (res.ok) {
+        alert("✅ Entrada registrada correctamente en contabilidad y almacén.");
+        setProductoSeleccionado("");
+        setCantidad("");
+        setCostoFactura("");
+        setTasaCambio("");
+        cargarInventario();
+      } else {
+        const err = await res.json();
+        alert(`❌ Error: ${err.mensaje}`);
+      }
+    } catch (error) {
+      alert("Error de conexión con el servidor.");
+    }
   };
 
   const handleEliminarProducto = async (id: string, nombre: string) => {
@@ -100,7 +140,7 @@ export default function GestorAlmacen() {
       });
 
       if (res.ok) {
-        cargarInventario(); // Recarga la tabla
+        cargarInventario();
       } else {
         const err = await res.json();
         alert(`❌ Error: ${err.mensaje}`);
@@ -111,18 +151,22 @@ export default function GestorAlmacen() {
     }
   };
 
+  // Variables para renderizado condicional de moneda
+  const productoActual = inventario.find((item: any) => item._id === productoSeleccionado);
+  const mostrarTasa = productoActual && productoActual.moneda !== "CUP";
+
   return (
     <div className="min-h-screen bg-gray-100 flex">
       <Sidebar />
       <main className="flex-1 p-10 overflow-y-auto">
         <header className="mb-10">
           <h1 className="text-4xl font-black text-gray-800">Gestor de Almacén</h1>
-          <p className="text-gray-500 mt-2 text-lg">Ingreso de mercancía y recálculo automático de costos.</p>
+          <p className="text-gray-500 mt-2 text-lg">Ingreso de mercancía y recálculo automático de costos (Base CUP).</p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 col-span-1">
+          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 col-span-1 h-fit">
             <div className="flex border-b border-gray-200 mb-6">
               <button 
                 type="button"
@@ -141,31 +185,63 @@ export default function GestorAlmacen() {
             </div>
 
             {!modoCrear ? (
-              <form onSubmit={handleRegistrarEntrada} className="space-y-4">
+              <form className="space-y-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Producto Recibido</label>
                   <select 
                     value={productoSeleccionado} 
-                    onChange={(e) => setProductoSeleccionado(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500"
+                    onChange={(e) => {
+                      setProductoSeleccionado(e.target.value);
+                      setTasaCambio(""); 
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 bg-white"
                   >
                     <option value="">-- Selecciona un producto --</option>
                     {inventario.map((item: any) => (
-                      <option key={item._id} value={item._id}>{item.nombre} ({item.unidadMedida}) - {item.moneda}</option>
+                      <option key={item._id} value={item._id}>
+                        {item.nombre} ({item.unidadMedida}) - Compra en {item.moneda}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Cantidad</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Cantidad Total</label>
                     <input type="number" value={cantidad} onChange={(e) => setCantidad(e.target.value)} placeholder="Ej: 3000" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500" />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Costo Total</label>
-                    <input type="number" value={costoFactura} onChange={(e) => setCostoFactura(e.target.value)} placeholder="Ej: 15000" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500" />
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Costo Factura ({productoActual ? productoActual.moneda : '...'})</label>
+                    <input type="number" step="0.01" value={costoFactura} onChange={(e) => setCostoFactura(e.target.value)} placeholder="Ej: 15" className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500" />
                   </div>
                 </div>
-                <button type="submit" className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-slate-800 transition mt-4">
+
+                {mostrarTasa && (
+                  <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 mt-2">
+                    <label className="block text-sm font-black text-orange-800 mb-1">Tasa de Cambio (La calle)</label>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-gray-600">1 {productoActual.moneda} =</span>
+                      <input 
+                        type="number" 
+                        value={tasaCambio} 
+                        onChange={(e) => setTasaCambio(e.target.value)} 
+                        placeholder="Ej: 320" 
+                        className="w-full px-4 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 font-bold bg-white" 
+                      />
+                      <span className="font-bold text-gray-600">CUP</span>
+                    </div>
+                    {costoFactura && tasaCambio && (
+                      <p className="text-xs text-orange-600 mt-2 font-semibold">
+                        Gasto real contable: {(Number(costoFactura) * Number(tasaCambio)).toLocaleString()} CUP
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <button 
+                  type="button" 
+                  onClick={handleRegistrarEntrada}
+                  className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-slate-800 transition mt-4"
+                >
                   Confirmar al Almacén
                 </button>
               </form>
@@ -193,10 +269,11 @@ export default function GestorAlmacen() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Moneda de Compra</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Moneda de Compra Frecuente</label>
                   <select value={nuevaMoneda} onChange={(e) => setNuevaMoneda(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 bg-white">
                     <option value="CUP">CUP</option>
                     <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
                   </select>
                 </div>
                 <button 
@@ -210,9 +287,9 @@ export default function GestorAlmacen() {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl shadow-md border border-gray-100 col-span-2 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 col-span-2 overflow-hidden h-fit">
             <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-gray-800">Estado de las Estanterías</h3>
+              <h3 className="text-lg font-bold text-gray-800">Estado de las Estanterías (Valor en CUP)</h3>
             </div>
             
             {inventario.length === 0 ? (
@@ -223,7 +300,7 @@ export default function GestorAlmacen() {
                   <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider">
                     <tr>
                       <th className="px-6 py-4 font-bold">Producto</th>
-                      <th className="px-6 py-4 font-bold">Costo Unitario</th>
+                      <th className="px-6 py-4 font-bold">Costo Promedio Unitario</th>
                       <th className="px-6 py-4 font-bold">Stock Actual</th>
                       <th className="px-6 py-4 font-bold text-center">Acciones</th>
                     </tr>
@@ -233,10 +310,12 @@ export default function GestorAlmacen() {
                       <tr key={item._id} className="hover:bg-orange-50 transition-colors">
                         <td className="px-6 py-4 font-bold text-gray-900">{item.nombre}</td>
                         <td className="px-6 py-4 text-gray-600">
-                          {Number(item.costoPorUnidad).toFixed(2)} {item.moneda} / {item.unidadMedida}
+                          <span className="font-mono bg-slate-100 px-2 py-1 rounded">
+                            {Number(item.costoPorUnidad).toFixed(2)} CUP
+                          </span> / {item.unidadMedida}
                         </td>
-                        <td className="px-6 py-4 font-black text-gray-800">
-                          {item.stock} {item.unidadMedida}
+                        <td className="px-6 py-4 font-black text-gray-800 text-lg">
+                          {item.stock} <span className="text-sm font-normal text-gray-500">{item.unidadMedida}</span>
                         </td>
                         <td className="px-6 py-4 text-center">
                           <button 
